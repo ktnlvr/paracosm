@@ -88,6 +88,10 @@ async def eightball(args: list[str], shell: Shell, device: Device):
 
 @program(name="seek", brief="looks for things, do NOT use with philosophical concepts")
 async def seek(args: list[str], shell: Shell, device: Device):
+    if len(args) < 1:
+        await shell.writeline("Name something to seek, like `seek truth`.")
+        return
+
     for arg in args:
         await shell.writeline(f"Seeking {arg}...")
         await sleep(1.5)
