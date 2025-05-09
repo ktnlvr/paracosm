@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Paracosm</title>
+    <link href="https://fonts.cdnfonts.com/css/commodore-64-pixelized" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1e1e1e;
+            color: #c5c5c5;
+            font-family: monospace;
+            font: "C64 Pro";
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #terminal {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            width: 80%;
+        }
+
+        #input-line {
+            display: flex;
+            border-top: 1px solid #333;
+        }
+
+        #prompt {
+            padding: 10px;
+            color: #868686;
+        }
+
+        #cmdline {
+            flex: 1;
+            background: none;
+            border: none;
+            color: inherit;
+            font: inherit;
+            padding: 10px;
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="terminal"></div>
+
+    <div id="input-line">
+        <div id="prompt"><span id="username">user</span>@omen ~></div>
+        <input type="text" id="cmdline" autocomplete="off" autofocus />
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const cmdline = document.getElementById('cmdline');
+
+        const socket = new WebSocket(`ws://${location.host}/ws`);
+
+        const messageQueue = [];
+        let isStreaming = false;
+
+        async function streamMessage(text) {
+            const line = document.createElement('div');
+            terminal.appendChild(line);
+            for (let char of text) {
+                line.textContent += char;
+                scrollToBottom();
+                let delay = 8;
+                if (char === '\n')
+                    delay += 34;
+                await new Promise(r => setTimeout(r, delay));
+            }
+        }
+
+        async function processQueue() {
+            if (isStreaming) return;
+            isStreaming = true;
+            while (messageQueue.length > 0) {
+                const msg = messageQueue.shift();
+                await streamMessage(msg);
+            }
+            isStreaming = false;
+        }
+
+        socket.addEventListener('message', function (event) {
+            messageQueue.push(event.data);
+            processQueue();
+        });
+
+        socket.addEventListener('error', function (event) {
+            const errorLine = document.createElement('div');
+            errorLine.textContent = '[WebSocket error]';
+            terminal.appendChild(errorLine);
+            scrollToBottom();
+        });
+
+        function scrollToBottom() {
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function handleInput(input) {
+            console.log('User entered:', input);
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(input);
+            } else {
+                const offlineLine = document.createElement('div');
+                offlineLine.textContent = '[WebSocket not connected]';
+                terminal.appendChild(offlineLine);
+                scrollToBottom();
+            }
+        }
+
+        cmdline.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                const input = cmdline.value.trim();
+                if (input) {
+                    const line = document.createElement('div');
+                    line.textContent = '> ' + input;
+                    terminal.appendChild(line);
+                    scrollToBottom();
+
+                    handleInput(input);
+                    cmdline.value = '';
+                }
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('resize', scrollToBottom);
+    </script>
+</body>
+
+</html>
