@@ -62,7 +62,8 @@
         const terminal = document.getElementById('terminal');
         const cmdline = document.getElementById('cmdline');
 
-        const socket = new WebSocket(`ws://${location.host}/ws`);
+        const wsProtocol = location.protocol === 'https:' ? 'wss' : 'ws';
+        const socket = new WebSocket(`${wsProtocol}://${location.host}/ws`);
 
         const messageQueue = [];
         let isStreaming = false;
