@@ -66,6 +66,10 @@ async def splash(args: list[str], shell: Shell, device: Device):
 
 @program(name="eightball", brief="whispers truths")
 async def eightball(args: list[str], shell: Shell, device: Device):
+    prelude = "The magic 8-ball says..."
+    await shell.writeline(prelude)
+    await sleep(1.5)
+
     answers = [
         "Certainly.",
         "Decidedly so.",
