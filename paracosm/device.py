@@ -33,6 +33,6 @@ class Device:
         out = []
         for filename in self.files:
             file = self.files[filename]
-            if text in file.text:
+            if text.lower() in file.text.lower():
                 out.append(file)
         return out

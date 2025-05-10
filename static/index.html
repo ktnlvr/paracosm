@@ -77,9 +77,9 @@
             for (let char of text) {
                 line.textContent += char;
                 scrollToBottom();
-                let delay = 8;
+                let delay = Math.random();
                 if (char === '\n')
-                    delay += 34;
+                    delay += 10 + 10 * Math.random();
                 await new Promise(r => setTimeout(r, delay));
             }
         }

@@ -7,5 +7,5 @@ class EventHandler:
         self.shell = shell
         self.device = device
 
-    def on_file_read(self, name: str):
+    def on_file_read(self, file):
         ...

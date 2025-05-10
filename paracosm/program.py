@@ -113,3 +113,26 @@ async def seek(args: list[str], shell: Shell, device: Device):
         else:
             found_in = ", ".join([result.name for result in results])
             await shell.writeline(f"Found {arg} in {found_in}")
+
+@program(name="read", brief="prints the contents of the file")
+async def read(args: list[str], shell: Shell, device: Device):
+    if len(args) < 1:
+        await shell.writeline("No file to read.")
+        return
+    
+    files = []
+    not_found = []
+    for arg in args:
+        if file := device.get_file(arg):
+            files.append(file)
+        else:
+            not_found.append(arg)
+    
+    if not_found:
+        missing = ", ".join([f"'{name}'" for name in not_found])
+        await shell.writeline(f"{missing} not found")
+        return
+    
+    for file in files:
+        shell.event_handler.on_file_read(file)
+        await shell.writeline(file.text)

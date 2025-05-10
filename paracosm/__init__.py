@@ -5,8 +5,8 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from shlex import split as parse_args
 
-from .program import eightball, help, seek, splash
 from .beats.gatekeeper import EnableGatekeeper
+from .program import eightball, help, read, seek, splash
 from .device import Device
 from .shell import Shell
 
@@ -28,18 +28,15 @@ async def websocket_endpoint(
     device = Device("flamango")
     device.add_file_locale("poe.diff")
     device.add_file_locale("README")
+    device.add_file_locale("severance.txt")
+    device.add_file_locale("pwned.txt")
 
     shell = Shell(websocket)
-    shell.add_program(help, eightball, splash, seek)
-
-    event_handler = EnableGatekeeper(shell, device)
+    shell.add_program(help, eightball, splash, seek, read)
+    shell.event_handler = EnableGatekeeper(shell, device)
 
     while True:
         line = await shell.readline()
-        if file := device.get_file(line):
-            await shell.writeline(file.text)
-            event_handler.on_file_read(file)
-            continue
 
         cmd, *args = parse_args(line)
         program = shell.get_program(cmd)

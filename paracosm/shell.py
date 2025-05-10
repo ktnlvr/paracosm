@@ -7,6 +7,7 @@ class Shell:
         self.ws = ws
         self.programs = []
         self.expunger = Expunger()
+        self.event_handler = None
 
     def add_program(self, *program):
         self.programs.extend(program)
