@@ -101,6 +101,10 @@ async def seek(args: list[str], shell: Shell, device: Device):
         return
 
     for arg in args:
+        if file := device.get_file(arg):
+            await shell.writeline(f"File {file.name} exists, nothing to seek.")
+            return
+
         results = device.seek(arg)
         if len(results) == 0:
             await shell.writeline(f"Seeking {arg}...")
