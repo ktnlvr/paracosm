@@ -1,13 +1,17 @@
 from fastapi import WebSocket
 
+from .expunger import Expunger
 
 class Shell:
     def __init__(self, ws: WebSocket):
         self.ws = ws
         self.programs = []
+        self.expunger = Expunger()
 
     async def writeline(self, *text: str):
-        await self.ws.send_text("\n".join(text))
+        raw = "\n".join(text)
+        expunged = self.expunger.expunge(raw)
+        await self.ws.send_text(expunged)
 
     async def readline(self) -> str:
         return await self.ws.receive_text()

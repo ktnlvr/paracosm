@@ -26,15 +26,18 @@ async def websocket_endpoint(
     await websocket.accept()
 
     device = Device("flamango")
+    device.add_file_locale("poe.diff")
+    device.add_file_locale("README")
 
     shell = Shell(websocket)
 
     shell.programs.extend([help, eightball, splash, seek])
 
-    # await splash.run([], shell, device)
-
     while True:
         line = await shell.readline()
+        if file := device.get_file(line):
+            await shell.writeline(file.text)
+            continue
         cmd, *args = parse_args(line)
         program = shell.get_program(cmd)
         if program:

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from random import choice
 from asyncio import sleep
 
+from .utils import chance
 from .device import Device
 from .shell import Shell
 
@@ -92,7 +93,19 @@ async def seek(args: list[str], shell: Shell, device: Device):
         await shell.writeline("Name something to seek, like `seek truth`.")
         return
 
+    if args[0] == "guidance":
+        text = "READMEs have text."
+        if chance(0.01):
+            text = "READMEs have eyes.    o.o"
+        await shell.writeline(text)
+        return
+
     for arg in args:
-        await shell.writeline(f"Seeking {arg}...")
-        await sleep(1.5)
-        await shell.writeline(f"Alas, {arg} not found")
+        results = device.seek(arg)
+        if len(results) == 0:
+            await shell.writeline(f"Seeking {arg}...")
+            await shell.writeline(f"Alas, {arg} not found. Did you mean `guidance`?")
+            return
+        else:
+            found_in = ", ".join([result.name for result in results])
+            await shell.writeline(f"Found {arg} in {found_in}")
