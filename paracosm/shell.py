@@ -8,6 +8,9 @@ class Shell:
         self.programs = []
         self.expunger = Expunger()
 
+    def add_program(self, *program):
+        self.programs.extend(program)
+
     async def writeline(self, *text: str):
         raw = "\n".join(text)
         expunged = self.expunger.expunge(raw)
